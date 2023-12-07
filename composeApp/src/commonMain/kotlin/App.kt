@@ -12,41 +12,32 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
@@ -66,6 +57,7 @@ fun LoginTest() {
     var statusSnackBar by remember { mutableStateOf(false) }
     val textTitle by remember { mutableStateOf("Compose: ${Greeting().greet()}") }
     var usernameError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
     var passwordHidden by rememberSaveable { mutableStateOf(false) }
 
     Surface(color = Color.White) {
@@ -114,13 +106,19 @@ fun LoginTest() {
 //            }
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
-                label = { Text(text = "Password") },
+                onValueChange = {
+                    password = it
+                    passwordError = it.trim().isEmpty()
+                },
+                label = { Text(text = "Password*") },
+                isError = passwordError,
+                supportingText = { Text(if (passwordError) "Este campo es requerido" else "") },
                 visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    IconButton(onClick = { passwordHidden = !passwordHidden }){
-                        val visibilityIcon = if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    IconButton(onClick = { passwordHidden = !passwordHidden }) {
+                        val visibilityIcon =
+                            if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         Icon(imageVector = visibilityIcon, contentDescription = null)
                     }
                 },
@@ -136,6 +134,8 @@ fun LoginTest() {
                     statusSnackBar = true
                     if (username.trim().isEmpty()) {
                         usernameError = true
+                    } else if (password.trim().isEmpty()) {
+                        passwordError = true
                     }
                 },
                 modifier = Modifier
