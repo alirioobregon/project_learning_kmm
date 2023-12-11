@@ -51,6 +51,9 @@ kotlin {
 
             implementation(compose.materialIconsExtended)
 
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.transitions)
+
 
         }
     }

@@ -38,139 +38,29 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.FadeTransition
+import cafe.adriel.voyager.transitions.ScaleTransition
+import cafe.adriel.voyager.transitions.SlideTransition
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import screens.LoginScreen
+import screens.MainScreen
 
 @Composable
 fun App() {
     Column(modifier = Modifier.fillMaxWidth().background(Color.Blue)) {
 //        AnimateImage()
-        LoginTest()
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun LoginTest() {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var statusSnackBar by remember { mutableStateOf(false) }
-    val textTitle by remember { mutableStateOf("Compose: ${Greeting().greet()}") }
-    var usernameError by remember { mutableStateOf(false) }
-    var passwordError by remember { mutableStateOf(false) }
-    var passwordHidden by rememberSaveable { mutableStateOf(false) }
-
-    Surface(color = Color.White) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = textTitle,
-                fontSize = 24.sp,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            OutlinedTextField(
-                value = username,
-                onValueChange = {
-                    username = it
-                    usernameError = it.trim().isEmpty()
-                },
-                singleLine = true,
-                label = { Text(if (usernameError) "UserName*" else "UserName") },
-                isError = usernameError,
-                leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
-                supportingText = { Text(if (usernameError) "Este campo es requerido" else "") },
-                trailingIcon = {
-                    if (username.trim().isNotEmpty()) {
-                        IconButton(onClick = { username = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = null)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .semantics {
-                        if (usernameError) error("Este campo es requerido")
-                    }
-            )
-//            if (usernameError) {
-//                ProvideTextStyle(value = MaterialTheme.typography.bodySmall.copy(color = Color.Red)) {
-//                    Text(text = "Este campo es requerido", modifier = Modifier.align(Alignment.Start).padding(start = 8.dp))
-//                }
-//            }
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = it.trim().isEmpty()
-                },
-                label = { Text(text = "Password*") },
-                isError = passwordError,
-                supportingText = { Text(if (passwordError) "Este campo es requerido" else "") },
-                visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    IconButton(onClick = { passwordHidden = !passwordHidden }) {
-                        val visibilityIcon =
-                            if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        Icon(imageVector = visibilityIcon, contentDescription = null)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-            )
-            Button(
-                onClick = {
-                    // Aquí iría la lógica para autenticar al usuario
-                    // Se podría validar el nombre de usuario y contraseña ingresados
-                    // y proceder según el resultado
-                    statusSnackBar = true
-                    if (username.trim().isEmpty()) {
-                        usernameError = true
-                    } else if (password.trim().isEmpty()) {
-                        passwordError = true
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(text = "Login")
-                AnimatedVisibility(statusSnackBar) {
-
-                }
-            }
+        Navigator(screen = LoginScreen()) { navigator ->
+//            ScaleTransition(navigator)
+//            SlideTransition(navigator)
+            FadeTransition(navigator)
         }
     }
 }
 
-@OptIn(ExperimentalResourceApi::class)
-@Composable
-fun AnimateImage() {
-    MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello World!") }
-        var showImage by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Compose: ${Greeting().greet()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    null
-                )
-            }
-        }
-    }
-}
+
+
 
