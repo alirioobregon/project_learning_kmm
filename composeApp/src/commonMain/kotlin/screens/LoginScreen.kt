@@ -51,8 +51,8 @@ class LoginScreen: Screen {
 @Composable
 fun Login() {
     val navigator = LocalNavigator.current
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("Ali") }
+    var password by remember { mutableStateOf("1234") }
     var statusSnackBar by remember { mutableStateOf(false) }
     val textTitle by remember { mutableStateOf("Compose: ${Greeting().greet()}") }
     var usernameError by remember { mutableStateOf(false) }

@@ -51,12 +51,12 @@ import screens.MainScreen
 
 @Composable
 fun App() {
-    Column(modifier = Modifier.fillMaxWidth().background(Color.Blue)) {
+    Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
 //        AnimateImage()
         Navigator(screen = LoginScreen()) { navigator ->
 //            ScaleTransition(navigator)
-//            SlideTransition(navigator)
-            FadeTransition(navigator)
+            SlideTransition(navigator)
+//            FadeTransition(navigator)
         }
     }
 }
