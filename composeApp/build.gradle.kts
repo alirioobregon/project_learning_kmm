@@ -38,9 +38,14 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+
+            implementation("io.ktor:ktor-client-android:2.0.3")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+
+            implementation("io.ktor:ktor-client-cio:2.0.3")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0") // Dependencia para corrutinas en JVM
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -53,6 +58,10 @@ kotlin {
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
+
+            implementation("io.ktor:ktor-client-core:2.0.3")
+            implementation("io.ktor:ktor-client-cio:2.0.3")
+            implementation("io.ktor:ktor-network:2.0.3")
 
 
         }

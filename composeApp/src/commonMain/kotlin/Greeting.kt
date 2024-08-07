@@ -4,4 +4,9 @@ class Greeting {
     fun greet(): String {
         return "Hello, ${platform.name}!"
     }
+
+    fun getIp(): String {
+        return "Tu ip es: ${platform.ip}"
+    }
+
 }

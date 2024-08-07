@@ -53,7 +53,7 @@ import screens.MainScreen
 fun App() {
     Column(modifier = Modifier.fillMaxWidth().background(Color.Blue)) {
 //        AnimateImage()
-        Navigator(screen = LoginScreen()) { navigator ->
+        Navigator(screen = MainScreen()) { navigator ->
 //            ScaleTransition(navigator)
 //            SlideTransition(navigator)
             FadeTransition(navigator)
