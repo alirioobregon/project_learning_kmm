@@ -50,14 +50,17 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
+            implementation(compose.material)
             implementation(compose.material3)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
 
             implementation(compose.materialIconsExtended)
 
+//            voyager
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
+            implementation(libs.voyager.tabNavigator)
 
             implementation("io.ktor:ktor-client-core:2.0.3")
             implementation("io.ktor:ktor-client-cio:2.0.3")
