@@ -17,26 +17,31 @@ class SocketServer {
     private val clients = mutableSetOf<Socket>()
 
 
-    fun startServer(): Boolean = runBlocking {
+    fun startServer(socketInterface: SocketInterface) = runBlocking {
         try {
             val selector = SelectorManager(Dispatchers.Default)
             serverSocket = aSocket(selector).tcp().bind(port = port)
             println("Server started on port $port --- ${serverSocket.localAddress} -- ${serverSocket.isClosed}")
+            if (!serverSocket.isClosed) {
+                socketInterface.successServerConnect()
+            } else {
+                socketInterface.errorServerConnect()
+            }
 
             while (true) {
                 val socket = serverSocket.accept()
 
                 clients.add(socket)
-                handleClient(socket)
+                handleClient(socket, socketInterface)
             }
         } catch (e: Exception) {
             e.printStack()
+            socketInterface.errorServerConnect()
         }
-        return@runBlocking !serverSocket.isClosed
     }
 
 
-    private suspend fun handleClient(socket: Socket) {
+    private suspend fun handleClient(socket: Socket, socketInterface: SocketInterface) {
         withContext(Dispatchers.Default) {
             val input = socket.openReadChannel()
             val output = socket.openWriteChannel(autoFlush = true)
@@ -44,16 +49,25 @@ class SocketServer {
             // Leer mensaje del cliente
             val clientMessage = input.readUTF8Line(limit = 1024)
             println("Received from client: $clientMessage")
+            socketInterface.messageListener(Pair(clientMessage.toString(), 2))
 
             // Enviar respuesta al cliente
-            val responseMessage = "Bienvenido $clientMessage, Como vas?"
+            val responseMessage = "First execution $clientMessage"
             output.writeStringUtf8("$responseMessage\n")
+
+            while (true) {
+                val clientMessage = input.readUTF8Line(limit = 1024)
+                if (clientMessage != null) {
+                    println("Received from client: $clientMessage")
+                    socketInterface.messageListener(Pair(clientMessage.toString(), 2))
+                }
+            }
 
             socket.close()
         }
     }
 
-    private suspend fun sendToAllClients(message: String) {
+    suspend fun sendToAllClients(message: String) {
         withContext(Dispatchers.Default) {
             clients.forEach { socket ->
                 val output = socket.openWriteChannel(autoFlush = true)
