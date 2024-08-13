@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -17,9 +18,9 @@ kotlin {
             }
         }
     }
-    
+
     jvm("desktop")
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -30,10 +31,10 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(libs.compose.ui)
             implementation(libs.compose.ui.tooling.preview)
@@ -41,12 +42,14 @@ kotlin {
 
             implementation("io.ktor:ktor-client-android:2.0.3")
         }
+
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
 
             implementation("io.ktor:ktor-client-cio:2.0.3")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0") // Dependencia para corrutinas en JVM
         }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -66,6 +69,7 @@ kotlin {
             implementation("io.ktor:ktor-client-cio:2.0.3")
             implementation("io.ktor:ktor-network:2.0.3")
 
+            implementation(libs.ktor.serialization.kotlinx.json)
 
         }
     }

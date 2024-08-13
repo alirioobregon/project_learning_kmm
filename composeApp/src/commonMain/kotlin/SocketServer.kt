@@ -6,14 +6,14 @@ import io.ktor.network.sockets.isClosed
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.core.toByteArray
 import io.ktor.utils.io.printStack
 import io.ktor.utils.io.writeStringUtf8
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import models.Messages
+import utils.SerializationData
 
 class SocketServer {
     private val port = 12342
@@ -53,25 +53,31 @@ class SocketServer {
 
             // Coroutine para manejar la recepción de mensajes del cliente
 //            withContext(Dispatchers.IO) {
-                val input = socket.openReadChannel()
-                val output = socket.openWriteChannel(autoFlush = true)
+            val input = socket.openReadChannel()
+            val output = socket.openWriteChannel(autoFlush = true)
 
-                val pair = Pair(socket, output)
-                clients.add(pair)
+            val pair = Pair(socket, output)
+            clients.add(pair)
 
-                // Enviar respuesta inicial al cliente
-                output.writeStringUtf8("First execution\n")
-                while (true) {
-                    val clientMessage = input.readUTF8Line(limit = 16000)
-                    println("Aliiii Received from client: ${clientMessage.toString()}")
-                    if (clientMessage != null) {
-                        println("Aliiii Received from client: ${clientMessage.toString()}")
-                        socketInterface.messageListener(Pair(clientMessage, 1))
-                    } else {
-                        // Si el cliente envía null, significa que se desconectó
-                        break
-                    }
+            // Enviar respuesta inicial al cliente
+            val messages = Messages(1, "First execution", 1)
+//            output.writeStringUtf8("First execution\n")
+            val serializedMessage = SerializationData.getInstance().serializeMessage(messages)
+            println("Sending to client: $serializedMessage")
+            output.writeStringUtf8("$serializedMessage\n")
+
+            while (true) {
+                val clientMessage = input.readUTF8Line(limit = 16000)
+                println("Aliiii Received from client 1: ${clientMessage.toString()}")
+                if (clientMessage != null) {
+                    val message = SerializationData.getInstance().deserializeMessage(clientMessage)
+                    println("Aliiii Received from client 2: $message")
+                    socketInterface.messageListener(message)
+                } else {
+                    // Si el cliente envía null, significa que se desconectó
+                    break
                 }
+            }
 //            }
         } catch (e: Exception) {
             e.printStack()
@@ -91,8 +97,13 @@ class SocketServer {
             println("Aliiii send all client: ${clients}")
             clients.forEach { socket ->
 //            val output = socket.openWriteChannel(autoFlush = true)
-                socket.second?.writeStringUtf8("$message\n")
-                socketInterface.messageListener(Pair(message, 2))
+                val messagesLast = Messages(1, message, 1)
+                val serializedMessage =
+                    SerializationData.getInstance().serializeMessage(messagesLast)
+                clients.forEach { (_, output) ->
+                    output?.writeStringUtf8("$serializedMessage\n")
+                }
+                socketInterface.messageListener(messagesLast)
             }
         } catch (e: Exception) {
             e.printStack()

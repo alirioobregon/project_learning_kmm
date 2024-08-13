@@ -5,19 +5,18 @@ import SocketInterface
 import SocketServer
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import models.Messages
 
 data class MainUiState(
     var connected: Boolean = false,
     var isServer: Boolean = false,
-    var listMessage: MutableList<Pair<String, Int>> = mutableListOf()
+    var listMessages: MutableList<Messages> = mutableListOf()
 )
 
 class MainViewModel : ScreenModel, SocketInterface {
@@ -67,13 +66,13 @@ class MainViewModel : ScreenModel, SocketInterface {
         }
     }
 
-    override fun messageListener(message: Pair<String, Int>) {
+    override fun messageListener(messages: Messages) {
         _uiState.update { current ->
 //            current.listMessage.add(message)
-            val newList = current.listMessage + message
-            current.copy(listMessage = ArrayList(newList))
+            val newList = current.listMessages + messages
+            current.copy(listMessages = ArrayList(newList))
         }
-        println(_uiState.value.listMessage)
+        println(_uiState.value.listMessages)
     }
 
 }
