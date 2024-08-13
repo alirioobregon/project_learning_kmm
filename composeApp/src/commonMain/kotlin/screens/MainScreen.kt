@@ -25,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,17 +62,17 @@ class MainScreen : Screen {
     fun ViewMain(viewModel: MainViewModel) {
         val greeting = Greeting()
         val uiState by viewModel.uiState.collectAsState()
-        var txtIp by rememberSaveable { mutableStateOf("") }
+        var txtIp by rememberSaveable { mutableStateOf("192.168.100.") }
         var msgToSend by rememberSaveable { mutableStateOf("") }
 
         BoxWithConstraints() {
             Column(Modifier.background(Color.White).fillMaxHeight()) {
                 Text(greeting.greet(), Modifier.fillMaxWidth(), color = Color.Black)
-                Text(greeting.getIp(), Modifier.fillMaxWidth(), color = Color.Black)
+                Text("Tu ip es: ${greeting.getIp()}", Modifier.fillMaxWidth(), color = Color.Black)
                 Row {
                     OutlinedButton(
                         onClick = {
-                            viewModel.startSocket()
+                            viewModel.startSocket(greeting.getIp())
                         }, enabled = !uiState.connected, colors = ButtonDefaults.buttonColors(
                             containerColor = if (!uiState.connected) Color.White else Color.Green,
                             disabledContainerColor = if (!uiState.connected) Color.White else Color.Green
@@ -92,7 +94,12 @@ class MainScreen : Screen {
                         singleLine = true,
                         label = { Text("ip") },
 //                    isError = usernameError,
-                        leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = null
+                            )
+                        },
 //                    supportingText = { Text(if (usernameError) "Este campo es requerido" else "") },
                         trailingIcon = {
                             if (txtIp.trim().isNotEmpty()) {
@@ -101,6 +108,9 @@ class MainScreen : Screen {
                                 }
                             }
                         },
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = Color.Black
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp)
@@ -136,6 +146,9 @@ class MainScreen : Screen {
                             }
                         }
                     },
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.Black
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp)
@@ -150,10 +163,19 @@ class MainScreen : Screen {
                     Text("Send message")
                 }
 
-                LazyColumn {
+                LazyColumn(Modifier.fillMaxWidth()) {
+//                    val list = listOf("saasasas", "asasaasa")
                     items(uiState.listMessage) {
                         val align = if (it.second == 1) TextAlign.Start else TextAlign.End
-                        Text(it.first, textAlign = align)
+                        val background = if (it.second == 2) Color.LightGray else Color.Transparent
+                        Text(
+                            text = "${it.first}",
+                            textAlign = align,
+                            color = Color.Black,
+                            modifier = Modifier.fillMaxWidth()
+                                .background(color = background)
+                        )
+//                        Text(text = it, textAlign = TextAlign.Start, color = Color.Black)
                     }
                 }
 

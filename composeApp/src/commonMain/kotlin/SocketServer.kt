@@ -5,34 +5,42 @@ import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.isClosed
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
+import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.core.toByteArray
 import io.ktor.utils.io.printStack
 import io.ktor.utils.io.writeStringUtf8
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class SocketServer {
-    private val port = 12345
+    private val port = 12342
     private lateinit var serverSocket: ServerSocket
-    private val clients = mutableSetOf<Socket>()
+    private val clients = mutableSetOf<Pair<Socket, ByteWriteChannel?>>()
 
 
-    fun startServer(socketInterface: SocketInterface) = runBlocking {
+    suspend fun startServer(socketInterface: SocketInterface, ip: String) {
         try {
-            val selector = SelectorManager(Dispatchers.Default)
-            serverSocket = aSocket(selector).tcp().bind(port = port)
-            println("Server started on port $port --- ${serverSocket.localAddress} -- ${serverSocket.isClosed}")
-            if (!serverSocket.isClosed) {
-                socketInterface.successServerConnect()
-            } else {
-                socketInterface.errorServerConnect()
-            }
+            withContext(Dispatchers.IO) {
+                val selector = SelectorManager(Dispatchers.Default)
+                serverSocket = aSocket(selector).tcp().bind(port = port)
+                println("Aliii Server started on port $ip $port --- ${serverSocket.localAddress}")
 
-            while (true) {
-                val socket = serverSocket.accept()
+                if (!serverSocket.isClosed) {
+                    socketInterface.successServerConnect()
+                } else {
+                    socketInterface.errorServerConnect()
+                }
 
-                clients.add(socket)
-                handleClient(socket, socketInterface)
+                while (true) {
+                    val socket = serverSocket.accept()
+                    println("Aliii Server acepted ${socket.localAddress} --- ${socket.remoteAddress}")
+                    launch {
+                        handleClient(socket, socketInterface)
+                    }
+                }
             }
         } catch (e: Exception) {
             e.printStack()
@@ -40,41 +48,62 @@ class SocketServer {
         }
     }
 
-
     private suspend fun handleClient(socket: Socket, socketInterface: SocketInterface) {
-        withContext(Dispatchers.Default) {
-            val input = socket.openReadChannel()
-            val output = socket.openWriteChannel(autoFlush = true)
+        try {
 
-            // Leer mensaje del cliente
-            val clientMessage = input.readUTF8Line(limit = 1024)
-            println("Received from client: $clientMessage")
-            socketInterface.messageListener(Pair(clientMessage.toString(), 2))
+            // Coroutine para manejar la recepción de mensajes del cliente
+//            withContext(Dispatchers.IO) {
+                val input = socket.openReadChannel()
+                val output = socket.openWriteChannel(autoFlush = true)
 
-            // Enviar respuesta al cliente
-            val responseMessage = "First execution $clientMessage"
-            output.writeStringUtf8("$responseMessage\n")
+                val pair = Pair(socket, output)
+                clients.add(pair)
 
-            while (true) {
-                val clientMessage = input.readUTF8Line(limit = 1024)
-                if (clientMessage != null) {
-                    println("Received from client: $clientMessage")
-                    socketInterface.messageListener(Pair(clientMessage.toString(), 2))
+                // Enviar respuesta inicial al cliente
+                output.writeStringUtf8("First execution\n")
+                while (true) {
+                    val clientMessage = input.readUTF8Line(limit = 16000)
+                    println("Aliiii Received from client: ${clientMessage.toString()}")
+                    if (clientMessage != null) {
+                        println("Aliiii Received from client: ${clientMessage.toString()}")
+                        socketInterface.messageListener(Pair(clientMessage, 1))
+                    } else {
+                        // Si el cliente envía null, significa que se desconectó
+                        break
+                    }
+                }
+//            }
+        } catch (e: Exception) {
+            e.printStack()
+        } finally {
+            // Limpiar recursos y eliminar cliente de la lista
+            clients.forEach {
+                if (it.first == socket) {
+                    clients.remove(it)
                 }
             }
-
             socket.close()
         }
     }
 
-    suspend fun sendToAllClients(message: String) {
-        withContext(Dispatchers.Default) {
+    suspend fun sendToAllClients(message: String, socketInterface: SocketInterface) {
+        try {
+            println("Aliiii send all client: ${clients}")
             clients.forEach { socket ->
-                val output = socket.openWriteChannel(autoFlush = true)
-                output.writeStringUtf8("$message\n")
+//            val output = socket.openWriteChannel(autoFlush = true)
+                socket.second?.writeStringUtf8("$message\n")
+                socketInterface.messageListener(Pair(message, 2))
             }
+        } catch (e: Exception) {
+            e.printStack()
         }
     }
 
+    companion object {
+        private val instanceClass: SocketServer by lazy { SocketServer() }
 
+        fun getInstance(): SocketServer {
+            return instanceClass
+        }
+    }
 }

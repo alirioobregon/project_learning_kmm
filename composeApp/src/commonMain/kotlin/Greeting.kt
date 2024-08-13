@@ -6,7 +6,7 @@ class Greeting {
     }
 
     fun getIp(): String {
-        return "Tu ip es: ${platform.ip}"
+        return platform.ip
     }
 
 }

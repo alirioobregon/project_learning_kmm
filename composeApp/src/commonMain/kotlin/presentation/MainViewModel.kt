@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 data class MainUiState(
     var connected: Boolean = false,
     var isServer: Boolean = false,
-    val listMessage: ArrayList<Pair<String, Int>> = ArrayList()
+    var listMessage: MutableList<Pair<String, Int>> = mutableListOf()
 )
 
 class MainViewModel : ScreenModel, SocketInterface {
@@ -25,25 +25,26 @@ class MainViewModel : ScreenModel, SocketInterface {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun startSocket() {
+    fun startSocket(ip: String) {
         screenModelScope.launch(Dispatchers.IO) {
-            SocketServer().startServer(this@MainViewModel)
+            SocketServer.getInstance().startServer(this@MainViewModel, ip)
         }
     }
 
     fun connectToServer(ip: String) {
         screenModelScope.launch(Dispatchers.IO) {
 //            delay(500)
-            SocketClient().connectToServer(ip, this@MainViewModel)
+            SocketClient.getInstance().connectToServer2(ip, this@MainViewModel)
         }
     }
 
     fun sendMessage(message: String) {
-        screenModelScope.launch(Dispatchers.Default) {
+        screenModelScope.launch(Dispatchers.IO) {
             if (_uiState.value.isServer) {
-                SocketServer().sendToAllClients(message)
+                SocketServer.getInstance().sendToAllClients(message, this@MainViewModel)
             } else {
-                SocketClient().sendToServer(message)
+                println("Aliii send to server")
+                SocketClient.getInstance().sendToServer(message, this@MainViewModel)
             }
         }
     }
@@ -67,11 +68,12 @@ class MainViewModel : ScreenModel, SocketInterface {
     }
 
     override fun messageListener(message: Pair<String, Int>) {
-        val newList = _uiState.value.listMessage
-        newList.add(message)
-        _uiState.update {
-            it.copy(listMessage = newList)
+        _uiState.update { current ->
+//            current.listMessage.add(message)
+            val newList = current.listMessage + message
+            current.copy(listMessage = ArrayList(newList))
         }
+        println(_uiState.value.listMessage)
     }
 
 }
