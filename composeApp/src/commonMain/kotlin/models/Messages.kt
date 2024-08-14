@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class Messages(
     val type: Int,
     val message: String,
-    val origin: Int
+    var transmitter: Boolean
 )

@@ -57,7 +57,9 @@ class MainViewModel : ScreenModel, SocketInterface {
 
 
     override fun errorServerConnect() {
-
+        _uiState.update {
+            it.copy(connected = false, isServer = false)
+        }
     }
 
     override fun successClientConnect() {

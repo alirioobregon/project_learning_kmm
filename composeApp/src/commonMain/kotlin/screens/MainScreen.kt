@@ -153,8 +153,9 @@ class MainScreen : Screen {
                 LazyColumn(Modifier.fillMaxWidth()) {
 //                    val list = listOf("saasasas", "asasaasa")
                     items(uiState.listMessages) {
-                        val align = if (it.origin == 1) TextAlign.Start else TextAlign.End
-                        val background = if (it.origin == 2) Color.LightGray else Color.Transparent
+                        val align =
+                            if (it.transmitter) TextAlign.End else TextAlign.Start
+                        val background = if (it.transmitter) Color.LightGray else Color.Transparent
                         Text(
                             text = it.message,
                             textAlign = align,

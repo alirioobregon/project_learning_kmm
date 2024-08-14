@@ -17,7 +17,7 @@ import utils.SerializationData
 
 class SocketServer {
     private val port = 12342
-    private lateinit var serverSocket: ServerSocket
+    private var serverSocket: ServerSocket? = null
     private val clients = mutableSetOf<Pair<Socket, ByteWriteChannel?>>()
 
 
@@ -26,19 +26,21 @@ class SocketServer {
             withContext(Dispatchers.IO) {
                 val selector = SelectorManager(Dispatchers.Default)
                 serverSocket = aSocket(selector).tcp().bind(port = port)
-                println("Aliii Server started on port $ip $port --- ${serverSocket.localAddress}")
+                println("Aliii Server started on port $ip $port --- ${serverSocket?.localAddress}")
 
-                if (!serverSocket.isClosed) {
-                    socketInterface.successServerConnect()
-                } else {
-                    socketInterface.errorServerConnect()
-                }
+                serverSocket?.let {
+                    if (!it.isClosed) {
+                        socketInterface.successServerConnect()
+                    } else {
+                        socketInterface.errorServerConnect()
+                    }
 
-                while (true) {
-                    val socket = serverSocket.accept()
-                    println("Aliii Server acepted ${socket.localAddress} --- ${socket.remoteAddress}")
-                    launch {
-                        handleClient(socket, socketInterface)
+                    while (true) {
+                        val socket = it.accept()
+                        println("Aliii Server acepted ${socket.localAddress} --- ${socket.remoteAddress}")
+                        launch {
+                            handleClient(socket, socketInterface)
+                        }
                     }
                 }
             }
@@ -60,11 +62,13 @@ class SocketServer {
             clients.add(pair)
 
             // Enviar respuesta inicial al cliente
-            val messages = Messages(1, "First execution", 1)
+            val messages = Messages(1, "First execution", true)
 //            output.writeStringUtf8("First execution\n")
             val serializedMessage = SerializationData.getInstance().serializeMessage(messages)
             println("Sending to client: $serializedMessage")
             output.writeStringUtf8("$serializedMessage\n")
+            socketInterface.messageListener(messages)
+
 
             while (true) {
                 val clientMessage = input.readUTF8Line(limit = 16000)
@@ -72,6 +76,7 @@ class SocketServer {
                 if (clientMessage != null) {
                     val message = SerializationData.getInstance().deserializeMessage(clientMessage)
                     println("Aliiii Received from client 2: $message")
+                    message.transmitter = false
                     socketInterface.messageListener(message)
                 } else {
                     // Si el cliente envía null, significa que se desconectó
@@ -97,7 +102,7 @@ class SocketServer {
             println("Aliiii send all client: ${clients}")
             clients.forEach { socket ->
 //            val output = socket.openWriteChannel(autoFlush = true)
-                val messagesLast = Messages(1, message, 1)
+                val messagesLast = Messages(1, message, true)
                 val serializedMessage =
                     SerializationData.getInstance().serializeMessage(messagesLast)
                 clients.forEach { (_, output) ->
@@ -107,6 +112,9 @@ class SocketServer {
             }
         } catch (e: Exception) {
             e.printStack()
+            serverSocket = null
+            clients.clear()
+            socketInterface.errorServerConnect()
         }
     }
 

@@ -52,6 +52,7 @@ class SocketClient {
                     return@withContext if (response != null) {
                         println("Received from server 1: $response")
                         val message = SerializationData.getInstance().deserializeMessage(response)
+                        message.transmitter = false
                         socketInterface.messageListener(message)
 
                         // Coroutine para manejar la recepción de mensajes
@@ -63,6 +64,7 @@ class SocketClient {
                                     println("Received from server 3: $serverMessage")
                                     val message = SerializationData.getInstance()
                                         .deserializeMessage(serverMessage)
+                                    message.transmitter = false
                                     socketInterface.messageListener(message)
                                 }
                             }
@@ -114,7 +116,7 @@ class SocketClient {
             if (channelOutput == null) {
                 channelOutput = socket?.openWriteChannel(autoFlush = true)
             }
-            val messagesToSend = Messages(2, message, 2)
+            val messagesToSend = Messages(2, message, true)
             val serializedMessage = SerializationData.getInstance().serializeMessage(messagesToSend)
             channelOutput?.writeStringUtf8("$serializedMessage\n")
             println(
@@ -125,6 +127,9 @@ class SocketClient {
             socketInterface.messageListener(messagesToSend)
         } catch (e: Exception) {
             println("Aliii send to server error: $e")
+            socket = null
+            channelOutput = null
+            socketInterface.errorServerConnect()
         }
     }
 
