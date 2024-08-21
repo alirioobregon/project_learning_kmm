@@ -41,6 +41,9 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
             implementation("io.ktor:ktor-client-android:2.0.3")
+
+            implementation("com.mapbox.extension:maps-compose:11.6.0")
+            implementation("com.mapbox.maps:android:11.6.0")
         }
 
         desktopMain.dependencies {
