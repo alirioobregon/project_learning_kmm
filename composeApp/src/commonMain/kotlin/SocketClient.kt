@@ -20,10 +20,10 @@ class SocketClient {
     private val port = 12342
     private var socket: Socket? = null
     private var channelOutput: ByteWriteChannel? = null
-    val msg = "{asasas}"
+//    val msg = "{asasas}"
 
 
-    suspend fun connectToServer2(serverIp: String, socketInterface: SocketInterface): Boolean {
+    suspend fun connectToServer(serverIp: String, socketInterface: SocketInterface): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val selector = SelectorManager(Dispatchers.IO)
@@ -35,8 +35,6 @@ class SocketClient {
                 }
 
                 if (socket?.isClosed == false) {
-
-
                     val input = socket?.openReadChannel()
                     println("Aliii data server conected ${socket?.remoteAddress} ---- ${socket?.localAddress} -- $input")
 //                    val output = socket?.openWriteChannel(autoFlush = true)

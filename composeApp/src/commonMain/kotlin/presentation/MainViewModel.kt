@@ -33,7 +33,14 @@ class MainViewModel : ScreenModel, SocketInterface {
     fun connectToServer(ip: String) {
         screenModelScope.launch(Dispatchers.IO) {
 //            delay(500)
-            SocketClient.getInstance().connectToServer2(ip, this@MainViewModel)
+            SocketClient.getInstance().connectToServer(ip, this@MainViewModel)
+        }
+    }
+
+    fun closeConnectToServer() {
+        screenModelScope.launch(Dispatchers.IO) {
+//            delay(500)
+            SocketServer.getInstance().closeSocket(this@MainViewModel)
         }
     }
 

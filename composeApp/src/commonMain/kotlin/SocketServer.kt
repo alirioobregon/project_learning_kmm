@@ -6,7 +6,6 @@ import io.ktor.network.sockets.isClosed
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.printStack
 import io.ktor.utils.io.writeStringUtf8
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -45,7 +44,7 @@ class SocketServer {
                 }
             }
         } catch (e: Exception) {
-            e.printStack()
+            e.printStackTrace()
             socketInterface.errorServerConnect()
         }
     }
@@ -53,15 +52,13 @@ class SocketServer {
     private suspend fun handleClient(socket: Socket, socketInterface: SocketInterface) {
         try {
 
-            // Coroutine para manejar la recepción de mensajes del cliente
-//            withContext(Dispatchers.IO) {
             val input = socket.openReadChannel()
             val output = socket.openWriteChannel(autoFlush = true)
 
             val pair = Pair(socket, output)
             clients.add(pair)
 
-            // Enviar respuesta inicial al cliente
+            // sent first response to client
             val messages = Messages(1, "First execution", true)
 //            output.writeStringUtf8("First execution\n")
             val serializedMessage = SerializationData.getInstance().serializeMessage(messages)
@@ -85,7 +82,7 @@ class SocketServer {
             }
 //            }
         } catch (e: Exception) {
-            e.printStack()
+            e.printStackTrace()
         } finally {
             // Limpiar recursos y eliminar cliente de la lista
             clients.forEach {
@@ -99,7 +96,7 @@ class SocketServer {
 
     suspend fun sendToAllClients(message: String, socketInterface: SocketInterface) {
         try {
-            println("Aliiii send all client: ${clients}")
+            println("Aliiii send all client: $clients")
             clients.forEach { socket ->
 //            val output = socket.openWriteChannel(autoFlush = true)
                 val messagesLast = Messages(1, message, true)
@@ -111,11 +108,23 @@ class SocketServer {
                 socketInterface.messageListener(messagesLast)
             }
         } catch (e: Exception) {
-            e.printStack()
+            e.printStackTrace()
             serverSocket = null
             clients.clear()
             socketInterface.errorServerConnect()
         }
+    }
+
+    fun closeSocket(socketInterface: SocketInterface) {
+        try {
+            serverSocket?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        serverSocket = null
+        clients.clear()
+        socketInterface.errorServerConnect()
+
     }
 
     companion object {
