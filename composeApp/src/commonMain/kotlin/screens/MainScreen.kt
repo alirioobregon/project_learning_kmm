@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.filled.NetworkPing
 import androidx.compose.material.icons.filled.NetworkWifi
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -35,8 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +56,7 @@ class MainScreen : Screen {
         var txtIp by rememberSaveable { mutableStateOf("") }
         var msgToSend by rememberSaveable { mutableStateOf("") }
 
-        BoxWithConstraints() {
+        BoxWithConstraints {
             Column(Modifier.background(Color.White).fillMaxHeight().padding(8.dp)) {
 //                Text(greeting.greet(), Modifier.fillMaxWidth(), color = Color.Black)
                 Row(Modifier.fillMaxWidth()) {
